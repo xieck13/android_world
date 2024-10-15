@@ -32,7 +32,7 @@ from android_world import suite_utils
 from android_world.agents import base_agent
 from android_world.agents import human_agent
 from android_world.agents import infer
-from android_world.agents import m3a
+from android_world.agents import m3a, m3a2, m3a3, m3a4
 from android_world.agents import random_agent
 from android_world.agents import seeact
 from android_world.agents import t3a
@@ -137,6 +137,13 @@ _FIXED_TASK_SEED = flags.DEFINE_boolean(
     ' (n_task_combinations > 1).',
 )
 
+_GRPC_PORT = flags.DEFINE_integer(
+  'grpc_port',
+  8554,
+  'the grpc port of the running Android device'
+)
+
+
 
 # MiniWoB is very lightweight and new screens/View Hierarchy load quickly.
 _MINIWOB_TRANSITION_PAUSE = 0.2
@@ -175,6 +182,29 @@ def _get_agent(
     agent = t3a.T3A(env, infer.Gpt4Wrapper('gpt-4-turbo-2024-04-09'))
   elif _AGENT_NAME.value == 'm3a_gpt4v':
     agent = m3a.M3A(env, infer.Gpt4Wrapper('gpt-4-turbo-2024-04-09'))
+  elif _AGENT_NAME.value == 'm3a2_gpt4v':
+    agent = m3a2.M3A(env, infer.Gpt4Wrapper('gpt-4-turbo-2024-04-09'))
+  elif _AGENT_NAME.value == 'm3a3_gpt4v':
+    agent = m3a3.M3A(env, infer.Gpt4Wrapper('gpt-4-turbo-2024-04-09'))
+  elif _AGENT_NAME.value == 'm3a_gpt4o':
+    agent = m3a.M3A(env, infer.Gpt4Wrapper('gpt-4o'))
+  elif _AGENT_NAME.value == 'm3a3_gpt4o':
+    agent = m3a3.M3A(env, infer.Gpt4Wrapper('gpt-4o'))
+  elif _AGENT_NAME.value == 'm3a4_gpt4o':
+    agent = m3a4.M3A(env, infer.Gpt4Wrapper('gpt-4o'))
+  # llava
+  elif _AGENT_NAME.value == 'm3a_llava':
+    agent = m3a.M3A(env, infer.LlavaWrapper('221.12.22.187:30054'))
+  elif _AGENT_NAME.value == 'm3a_llava_ft':
+    agent = m3a.M3A(env, infer.LlavaWrapper('221.12.22.187:30399'))
+  elif _AGENT_NAME.value == 'm3a3_llava_ft':
+    agent = m3a3.M3A(env, infer.LlavaWrapper('221.12.22.187:30399'))
+  elif _AGENT_NAME.value == 'm3a4_llava_ft':
+    agent = m3a4.M3A(env, infer.LlavaWrapper('221.12.22.187:30302'))
+  elif _AGENT_NAME.value == 'm3a_qwen_72b':
+    agent = m3a.M3A(env, infer.QwenWrapper('Qwen2-VL-72B-Instruct'))
+  elif _AGENT_NAME.value == 'm3a4_qwen_72b':
+    agent = m3a4.M3A(env, infer.QwenWrapper('Qwen2-VL-72B-Instruct'))
   # SeeAct.
   elif _AGENT_NAME.value == 'seeact':
     agent = seeact.SeeAct(env)
@@ -200,6 +230,7 @@ def _main() -> None:
       console_port=_DEVICE_CONSOLE_PORT.value,
       emulator_setup=_EMULATOR_SETUP.value,
       adb_path=_ADB_PATH.value,
+      grpc_port=_GRPC_PORT.value
   )
   env_launcher.verify_api_level(env)
 

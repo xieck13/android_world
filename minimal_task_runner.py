@@ -29,7 +29,7 @@ from absl import flags
 from absl import logging
 from android_world import registry
 from android_world.agents import infer
-from android_world.agents import t3a
+from android_world.agents import t3a,m3a4
 from android_world.env import env_launcher
 from android_world.task_evals import task_eval
 
@@ -82,6 +82,12 @@ _TASK = flags.DEFINE_string(
     'A specific task to run.',
 )
 
+_GRPC_PORT = flags.DEFINE_integer(
+  'grpc_port',
+  8554,
+  'the grpc port of the running Android device'
+)
+
 
 def _main() -> None:
   """Runs a single task."""
@@ -89,6 +95,7 @@ def _main() -> None:
       console_port=_DEVICE_CONSOLE_PORT.value,
       emulator_setup=_EMULATOR_SETUP.value,
       adb_path=_ADB_PATH.value,
+      grpc_port=_GRPC_PORT.value
   )
   env_launcher.verify_api_level(env)
   env.reset(go_home=True)
@@ -105,7 +112,10 @@ def _main() -> None:
   params = task_type.generate_random_params()
   task = task_type(params)
   task.initialize_task(env)
-  agent = t3a.T3A(env, infer.Gpt4Wrapper('gpt-4-turbo-2024-04-09'))
+  # agent = t3a.T3A(env, infer.Gpt4Wrapper('gpt-4-turbo-2024-04-09'))
+  # agent = m3a4.M3A(env, infer.Gpt4Wrapper('gpt-4o'))
+  agent = m3a4.M3A(env, infer.LlavaWrapper('221.12.22.187:30474'))
+
 
   print('Goal: ' + str(task.goal))
   is_done = False

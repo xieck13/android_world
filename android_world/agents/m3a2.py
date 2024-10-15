@@ -47,29 +47,22 @@ PROMPT_PREFIX = (
     ' `{{"action_type": "status", "goal_status": "infeasible"}}`\n'
     "- Answer user's question:"
     ' `{{"action_type": "answer", "text": "<answer_text>"}}`\n'
-    '- Click/tap on an element on the screen. We have added marks (bounding'
-    ' boxes with numeric indexes on their TOP LEFT corner) to most of the UI'
-    ' elements in the screenshot, use the numeric index to indicate which'
-    ' element you want to click:'
-    ' `{{"action_type": "click", "index": <target_index>}}`.\n'
+    '- Click/tap on an element on the screen using relative pixel values (from 0 to 1) x and y,'
+    ' x and y should be float between 0~1 and point to element you want click:'
+    ' `{{"action_type": "click", "x": <x>, "y": <y>}}`.\n'
     '- Long press on an element on the screen, similar with the click action'
-    ' above, use the numeric label on the bounding box to indicate which'
-    ' element you want to long press:'
-    ' `{{"action_type": "long_press", "index": <target_index>}}`.\n'
+    ' above, use relative pixel values (from 0 to 1) to point the element you want to long press:'
+    ' `{{"action_type": "long_press", "x": <x>, "y": <y>}}`.\n'
     '- Type text into a text field (this action contains clicking the text'
     ' field, typing in the text and pressing the enter, so no need to click on'
-    ' the target field to start), use the numeric label'
-    ' on the bounding box to indicate the target text field:'
+    ' the target field to start), use relative pixel values (from 0 to 1) x and y to point the target text field:'
     ' `{{"action_type": "input_text", "text": <text_input>,'
-    ' "index": <target_index>}}`\n'
+    ' "x": <x>, "y": <y>}}`\n'
     '- Press the Enter key: `{{"action_type": "keyboard_enter"}}`\n'
     '- Navigate to the home screen: `{{"action_type": "navigate_home"}}`\n'
     '- Navigate back: `{{"action_type": "navigate_back"}}`\n'
-    '- Scroll the screen or a scrollable UI element in one of the four'
-    ' directions, use the same numeric index as above if you want to scroll a'
-    ' specific UI element, leave it empty when scroll the whole screen:'
-    ' `{{"action_type": "scroll", "direction": <up, down, left, right>,'
-    ' "index": <optional_target_index>}}`\n'
+    '- Scroll the screen or a scrollable UI element in one of the four directions'
+    ' `{{"action_type": "scroll", "direction": <up, down, left, right>}}`\n'
     '- Open an app (nothing will happen if the app is not'
     ' installed): `{{"action_type": "open_app", "app_name": <name>}}`\n'
     '- Wait for the screen to update: `{{"action_type": "wait"}}`\n'
@@ -376,7 +369,6 @@ class M3A(base_agent.EnvironmentInteractingAgent):
         'summary_prompt': None,
         'summary': None,
         'summary_raw_response': None,
-        "train_data": None,
     }
     print('----------step ' + str(len(self.history) + 1))
 
@@ -385,23 +377,8 @@ class M3A(base_agent.EnvironmentInteractingAgent):
     orientation = self.env.orientation
     physical_frame_boundary = self.env.physical_frame_boundary
 
-    before_ui_elements = state.ui_elements
-    before_ui_elements_list = _generate_ui_elements_description_list(
-        before_ui_elements, logical_screen_size
-    )
     step_data['raw_screenshot'] = state.pixels.copy()
     before_screenshot = state.pixels.copy()
-    for index, ui_element in enumerate(before_ui_elements):
-      if m3a_utils.validate_ui_element(ui_element, logical_screen_size):
-        m3a_utils.add_ui_element_mark(
-            before_screenshot,
-            ui_element,
-            index,
-            logical_screen_size,
-            physical_frame_boundary,
-            orientation,
-        )
-    step_data['before_screenshot_with_som'] = before_screenshot.copy()
 
     action_prompt = _action_selection_prompt(
         goal,
@@ -413,6 +390,10 @@ class M3A(base_agent.EnvironmentInteractingAgent):
         self.additional_guidelines,
     )
     step_data['action_prompt'] = action_prompt
+
+    # import joblib
+    # joblib.dump((action_prompt, step_data['raw_screenshot'], before_screenshot), 'data.jl.z')
+
     action_output, is_safe, raw_response = self.llm.predict_mm(
         action_prompt,
         [
@@ -491,15 +472,6 @@ Action: {"action_type": "status", "goal_status": "infeasible"}"""
         self.history.append(step_data)
         return base_agent.AgentInteractionResult(False, step_data)
 
-      step_data["train_data"] = [
-        goal,
-        step_data['raw_screenshot'].copy(),
-        converted_action.action_type,
-        before_ui_elements[action_index].bbox_pixels.x_min,
-        before_ui_elements[action_index].bbox_pixels.x_max,
-        before_ui_elements[action_index].bbox_pixels.y_min,
-        before_ui_elements[action_index].bbox_pixels.y_max,
-      ]
       # Add mark to the target element.
       m3a_utils.add_ui_element_mark(
           step_data['raw_screenshot'],

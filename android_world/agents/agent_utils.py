@@ -39,3 +39,23 @@ def extract_json(s: str) -> Optional[dict[str, Any]]:
       return None
   else:
     return None
+
+
+def extract_json_from_action(s: str) -> Optional[dict[str, Any]]:
+  start = s.find("<|action_start|>") + len("<|action_start|>")
+  end = s.find("<|action_end|>")
+  try:
+    return eval(s[start: end])
+  except Exception as e:
+    print(f"extract_json_from_action fail: {e}")
+    return None
+
+
+def extract_json_from_action_v2(s: str) -> Optional[dict[str, Any]]:
+  start = s.find("<tool_call>\n") + len("<tool_call>\n")
+  end = s.find("\n</tool_call>")
+  try:
+    return eval(s[start: end])
+  except Exception as e:
+    print(f"extract_json_from_action fail: {e}")
+    return None

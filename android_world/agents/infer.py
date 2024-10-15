@@ -260,9 +260,10 @@ class Gpt4Wrapper(LlmWrapper, MultimodalLlmWrapper):
       max_retry: int = 3,
       temperature: float = 0.0,
   ):
-    if 'OPENAI_API_KEY' not in os.environ:
-      raise RuntimeError('OpenAI API key not set.')
-    self.openai_api_key = os.environ['OPENAI_API_KEY']
+    # if 'OPENAI_API_KEY' not in os.environ:
+    #   raise RuntimeError('OpenAI API key not set.')
+    # self.openai_api_key = os.environ['OPENAI_API_KEY']
+    self.openai_api_key = "sk-AihzBQwE4KRU6Ye84d70A10896C7458d949b4592A66030Bb"
     if max_retry <= 0:
       max_retry = 3
       print('Max_retry must be positive. Reset it to 3')
@@ -279,6 +280,52 @@ class Gpt4Wrapper(LlmWrapper, MultimodalLlmWrapper):
       text_prompt: str,
   ) -> tuple[str, Optional[bool], Any]:
     return self.predict_mm(text_prompt, [])
+
+  def predict_custom(
+    self, messages
+  ) -> tuple[str, Optional[bool], Any]:
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {self.openai_api_key}',
+    }
+
+    payload = {
+        'model': self.model,
+        'temperature': self.temperature,
+        'messages': messages,
+        'max_tokens': 1000,
+    }
+
+    counter = self.max_retry
+    wait_seconds = self.RETRY_WAITING_SECONDS
+    while counter > 0:
+      try:
+        response = requests.post(
+            "https://api.road2all.com/v1/chat/completions",
+            headers=headers,
+            json=payload,
+        )
+        if response.ok and 'choices' in response.json():
+          return (
+              response.json()['choices'][0]['message']['content'],
+              None,
+              response,
+          )
+        print(
+            f'Error calling {self.model} API with error message: '
+            + response.json()['error']['message']
+        )
+        time.sleep(wait_seconds)
+        wait_seconds *= 2
+      except Exception as e:  # pylint: disable=broad-exception-caught
+        # Want to catch all exceptions happened during LLM calls.
+        time.sleep(wait_seconds)
+        wait_seconds *= 2
+        counter -= 1
+        print('Error calling LLM, will retry soon...')
+        print(e)
+    return ERROR_CALLING_LLM, None, None
+
 
   def predict_mm(
       self, text_prompt: str, images: list[np.ndarray]
@@ -315,7 +362,91 @@ class Gpt4Wrapper(LlmWrapper, MultimodalLlmWrapper):
     while counter > 0:
       try:
         response = requests.post(
-            'https://api.openai.com/v1/chat/completions',
+            "https://api.road2all.com/v1/chat/completions",
+            headers=headers,
+            json=payload,
+        )
+        print("xieck::", response)
+        if response.ok and 'choices' in response.json():
+          return (
+              response.json()['choices'][0]['message']['content'],
+              None,
+              response,
+          )
+        print(
+            'Error calling OpenAI API with error message: '
+            + response.json()['error']['message']
+        )
+        time.sleep(wait_seconds)
+        wait_seconds *= 2
+      except Exception as e:  # pylint: disable=broad-exception-caught
+        # Want to catch all exceptions happened during LLM calls.
+        time.sleep(wait_seconds)
+        wait_seconds *= 2
+        counter -= 1
+        print('Error calling LLM, will retry soon...')
+        print(e)
+    return ERROR_CALLING_LLM, None, None
+
+
+
+class LlavaWrapper(LlmWrapper, MultimodalLlmWrapper):
+  """LlavaWrapper wrapper.
+
+  Attributes:
+    openai_api_key: The class gets the OpenAI api key either explicitly, or
+      through env variable in which case just leave this empty.
+    max_retry: Max number of retries when some error happens.
+    temperature: The temperature parameter in LLM to control result stability.
+    model: GPT model to use based on if it is multimodal.
+  """
+
+  RETRY_WAITING_SECONDS = 20
+
+  def __init__(
+      self,
+      model_name: str,
+      max_retry: int = 3,
+      temperature: float = 0.0,
+  ):
+    if max_retry <= 0:
+      max_retry = 3
+      print('Max_retry must be positive. Reset it to 3')
+    self.max_retry = min(max_retry, 5)
+    self.temperature = temperature
+    self.model = model_name
+
+  @classmethod
+  def encode_image(cls, image: np.ndarray) -> str:
+    return base64.b64encode(array_to_jpeg_bytes(image)).decode('utf-8')
+
+  def predict(
+      self,
+      text_prompt: str,
+  ) -> tuple[str, Optional[bool], Any]:
+    return self.predict_mm(text_prompt, [])
+
+  def predict_custom(
+    self, messages
+  ) -> tuple[str, Optional[bool], Any]:
+    headers = {
+        'Content-Type': 'application/json',
+    }
+
+    payload = {
+        'model': self.model,
+        'temperature': self.temperature,
+        'messages': messages,
+        'max_tokens': 1000,
+    }
+
+
+    counter = self.max_retry
+    wait_seconds = self.RETRY_WAITING_SECONDS
+    while counter > 0:
+      try:
+        response = requests.post(
+            f'http://{self.model}/v1/chat/completions',
             headers=headers,
             json=payload,
         )
@@ -326,7 +457,215 @@ class Gpt4Wrapper(LlmWrapper, MultimodalLlmWrapper):
               response,
           )
         print(
-            'Error calling OpenAI API with error message: '
+            f'Error calling {self.model} API with error message: '
+            + response.json()['error']['message']
+        )
+        time.sleep(wait_seconds)
+        wait_seconds *= 2
+      except Exception as e:  # pylint: disable=broad-exception-caught
+        # Want to catch all exceptions happened during LLM calls.
+        time.sleep(wait_seconds)
+        wait_seconds *= 2
+        counter -= 1
+        print('Error calling LLM, will retry soon...')
+        print(e)
+    return ERROR_CALLING_LLM, None, None
+
+
+
+  def predict_mm(
+      self, text_prompt: str, images: list[np.ndarray]
+  ) -> tuple[str, Optional[bool], Any]:
+    headers = {
+        'Content-Type': 'application/json',
+    }
+
+    payload = {
+        'model': self.model,
+        'temperature': self.temperature,
+        'messages': [{
+            'role': 'user',
+            'content': [
+                {'type': 'text', 'text': text_prompt},
+            ],
+        }],
+        'max_tokens': 1000,
+    }
+
+    # Gpt-4v supports multiple images, just need to insert them in the content
+    # list.
+    for image in images:
+      payload['messages'][0]['content'].append({
+          'type': 'image_url',
+          'image_url': {
+              'url': f'data:image/jpeg;base64,{self.encode_image(image)}'
+          },
+          "modalities": "multi-images"
+      })
+
+    counter = self.max_retry
+    wait_seconds = self.RETRY_WAITING_SECONDS
+    while counter > 0:
+      try:
+        response = requests.post(
+            f'http://{self.model}/v1/chat/completions',
+            headers=headers,
+            json=payload,
+        )
+        if response.ok and 'choices' in response.json():
+          return (
+              response.json()['choices'][0]['message']['content'],
+              None,
+              response,
+          )
+        print(
+            f'Error calling {self.model} API with error message: '
+            + response.json()['error']['message']
+        )
+        time.sleep(wait_seconds)
+        wait_seconds *= 2
+      except Exception as e:  # pylint: disable=broad-exception-caught
+        # Want to catch all exceptions happened during LLM calls.
+        time.sleep(wait_seconds)
+        wait_seconds *= 2
+        counter -= 1
+        print('Error calling LLM, will retry soon...')
+        print(e)
+    return ERROR_CALLING_LLM, None, None
+
+
+
+class QwenWrapper(LlmWrapper, MultimodalLlmWrapper):
+  """QwenWrapper wrapper.
+
+  Attributes:
+    openai_api_key: The class gets the OpenAI api key either explicitly, or
+      through env variable in which case just leave this empty.
+    max_retry: Max number of retries when some error happens.
+    temperature: The temperature parameter in LLM to control result stability.
+    model: GPT model to use based on if it is multimodal.
+  """
+
+  RETRY_WAITING_SECONDS = 20
+  MODEL2URL = {
+    "Qwen2-VL-72B-Instruct": "221.12.22.187:30630"
+  }
+
+  def __init__(
+      self,
+      model_name: str,
+      max_retry: int = 3,
+      temperature: float = 0.0,
+  ):
+    if max_retry <= 0:
+      max_retry = 3
+      print('Max_retry must be positive. Reset it to 3')
+    self.max_retry = min(max_retry, 5)
+    self.temperature = temperature
+    self.model = "Qwen2-VL-72B-Instruct"
+
+  @classmethod
+  def encode_image(cls, image: np.ndarray) -> str:
+    return base64.b64encode(array_to_jpeg_bytes(image)).decode('utf-8')
+
+  def predict(
+      self,
+      text_prompt: str,
+  ) -> tuple[str, Optional[bool], Any]:
+    return self.predict_mm(text_prompt, [])
+
+  def predict_custom(
+    self, messages
+  ) -> tuple[str, Optional[bool], Any]:
+    headers = {
+        'Content-Type': 'application/json',
+    }
+
+    payload = {
+        'model': self.model,
+        'temperature': self.temperature,
+        'messages': messages,
+        'max_tokens': 1000,
+    }
+
+
+    counter = self.max_retry
+    wait_seconds = self.RETRY_WAITING_SECONDS
+    while counter > 0:
+      try:
+        response = requests.post(
+            f'http://221.12.22.187:30310/v1/chat/completions',
+            headers=headers,
+            json=payload,
+        )
+        if response.ok and 'choices' in response.json():
+          return (
+              response.json()['choices'][0]['message']['content'],
+              None,
+              response,
+          )
+        print(
+            f'Error calling {self.model} API with error message: '
+            + response.json()['error']['message']
+        )
+        time.sleep(wait_seconds)
+        wait_seconds *= 2
+      except Exception as e:  # pylint: disable=broad-exception-caught
+        # Want to catch all exceptions happened during LLM calls.
+        time.sleep(wait_seconds)
+        wait_seconds *= 2
+        counter -= 1
+        print('Error calling LLM, will retry soon...')
+        print(e)
+    return ERROR_CALLING_LLM, None, None
+
+  def predict_mm(
+      self, text_prompt: str, images: list[np.ndarray]
+  ) -> tuple[str, Optional[bool], Any]:
+    headers = {
+        'Content-Type': 'application/json',
+    }
+
+    payload = {
+        'model': self.model,
+        'temperature': self.temperature,
+        'messages': [{
+            'role': 'user',
+            'content': [
+                {'type': 'text', 'text': text_prompt},
+            ],
+        }],
+        'max_tokens': 1000,
+    }
+
+    # Gpt-4v supports multiple images, just need to insert them in the content
+    # list.
+    for image in images:
+      payload['messages'][0]['content'].append({
+          'type': 'image_url',
+          'image_url': {
+              'url': f'data:image/jpeg;base64,{self.encode_image(image)}'
+          },
+      })
+
+    counter = self.max_retry
+    wait_seconds = self.RETRY_WAITING_SECONDS
+    while counter > 0:
+      try:
+        response = requests.post(
+            f'http://221.12.22.187:30310/v1/chat/completions',
+            headers=headers,
+            json=payload,
+        )
+        print(response)
+        if response.ok and 'choices' in response.json():
+          return (
+              response.json()['choices'][0]['message']['content'],
+              None,
+              response,
+          )
+        print(
+            f'Error calling {self.model} API with error message: '
             + response.json()['error']['message']
         )
         time.sleep(wait_seconds)
