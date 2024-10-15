@@ -93,8 +93,8 @@ class JSONAction:
 
   action_type: Optional[str] = None
   index: Optional[str | int] = None
-  x: Optional[int] = None
-  y: Optional[int] = None
+  x: Optional[float] = None
+  y: Optional[float] = None
   text: Optional[str] = None
   direction: Optional[str] = None
   goal_status: Optional[str] = None

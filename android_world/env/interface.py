@@ -296,6 +296,20 @@ class AsyncAndroidEnv(AsyncEnv):
         self.controller,
     )
 
+  def execute_action_v2(self, action) -> None:
+    actuation.execute_adb_action_v2(
+        action,
+        self.logical_screen_size,
+        self.controller,
+    )
+
+  def execute_action_v3(self, action) -> None:
+    actuation.execute_adb_action_v3(
+        action,
+        self.logical_screen_size,
+        self.controller,
+    )
+
   def hide_automation_ui(self) -> None:
     """Hides the coordinates on screen."""
     adb_utils.issue_generic_request(
