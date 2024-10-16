@@ -93,7 +93,7 @@ def build_message(role="user", text=None, image=None):
                     "image_url": {
                         "url": f"data:image/png;base64,{encode_image(image)}"
                     },
-                    # "modalities": "multi-images" if MAX_ROUND > 1 else "image"
+                    "modalities": "multi-images" if MAX_ROUND > 1 else "image"
                 },
                 {
                     "type": "text",

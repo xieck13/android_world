@@ -56,10 +56,19 @@ easy_task_part2=SimpleSmsReply,SimpleSmsSendClipboardContent,SportsTrackerActivi
 #   --tasks SystemBrightnessMaxVerify,SystemBluetoothTurnOffVerify,SystemBrightnessMinVerify
 
 
-agent_name=m3a_gpt4o
+# agent_name=m3a_gpt4o
+# python run.py   --suite_family=android_world \
+#   --agent_name=$agent_name \
+#   --output_path ../runs/train_$agent_name \
+#   --console_port 5554 \
+#   --grpc_port 8554 \
+#   --tasks 
+
+
+agent_name=m3a5_llava_ft
 python run.py   --suite_family=android_world \
   --agent_name=$agent_name \
-  --output_path ../runs/train_$agent_name \
+  --output_path ../runs/$agent_name \
   --console_port 5554 \
   --grpc_port 8554 \
-  --tasks ExpenseAddMultipleFromMarkor,ExpenseDeleteDuplicates,ExpenseDeleteDuplicates2,ExpenseDeleteMultiple2,FilesDeleteFile,FilesMoveFile,MarkorAddNoteHeader,MarkorChangeNoteContent,MarkorCreateNote,MarkorCreateNoteAndSms,MarkorCreateNoteFromClipboard,MarkorMergeNotes,MarkorMoveNote,MarkorTranscribeReceipt,MarkorTranscribeVideo,NotesTodoItemCount,OsmAndFavorite,OsmAndMarker,OsmAndTrack,RecipeAddMultipleRecipes,RecipeAddMultipleRecipesFromImage,RecipeAddMultipleRecipesFromMarkor,RecipeAddMultipleRecipesFromMarkor2,RecipeDeleteDuplicateRecipes2,RecipeDeleteDuplicateRecipes3,RecipeDeleteMultipleRecipesWithConstraint,RecipeDeleteMultipleRecipesWithNoise,RetroCreatePlaylist,RetroPlaylistDuration,RetroSavePlaylist,SaveCopyOfReceiptTaskEval,SimpleCalendarAddOneEvent,SimpleCalendarAddOneEventInTwoWeeks,SimpleCalendarDeleteEventsOnRelativeDay,SimpleCalendarEventOnDateAtTime,SimpleCalendarEventsOnDate,SimpleCalendarNextMeetingWithPerson,SimpleSmsReplyMostRecent,SimpleSmsResend,SimpleSmsSend,SimpleSmsSendReceivedAddress,SportsTrackerActivitiesOnDate,SportsTrackerTotalDistanceForCategoryOverInterval,SportsTrackerTotalDurationForCategoryThisWeek,TasksCompletedTasksForDate,TasksDueNextWeek,TasksHighPriorityTasks,TasksHighPriorityTasksDueOnDate,TurnOffWifiAndTurnOnBluetooth,VlcCreatePlaylist,VlcCreateTwoPlaylists
+  --tasks AudioRecorderRecordAudio,AudioRecorderRecordAudioWithFileName

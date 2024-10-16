@@ -17,6 +17,7 @@
 import ast
 import re
 from typing import Any, Optional
+import json
 
 
 def extract_json(s: str) -> Optional[dict[str, Any]]:
@@ -56,6 +57,16 @@ def extract_json_from_action_v2(s: str) -> Optional[dict[str, Any]]:
   end = s.find("\n</tool_call>")
   try:
     return eval(s[start: end])
+  except Exception as e:
+    print(f"extract_json_from_action fail: {e}")
+    return None
+
+
+def extract_json_from_action_v3(s: str) -> Optional[dict[str, Any]]:
+  start = s.find("<tool_call>\n") + len("<tool_call>\n")
+  end = s.find("\n</tool_call>")
+  try:
+    return json.loads(s[start: end])
   except Exception as e:
     print(f"extract_json_from_action fail: {e}")
     return None

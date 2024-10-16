@@ -1,2 +1,1 @@
-EMULATOR_NAME=AndroidWorldAvd
-EMULATOR_NAME=AndroidWorldAvd0 &&  ~/Android/Sdk/emulator/emulator  -avd $EMULATOR_NAME -no-snapshot -grpc 8554
+EMULATOR_NAME=AndroidWorldAvd &&  ~/Android/Sdk/emulator/emulator  -avd $EMULATOR_NAME -no-snapshot -grpc 8554

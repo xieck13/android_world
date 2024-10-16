@@ -20,7 +20,6 @@ def start_processes():
         "python run.py --suite_family=android_world "
         "--agent_name=$agent_name "
         "--output_path ../runs/train_$agent_name "
-        "--perform_emulator_setup "
         "--console_port 5554 "
         "--grpc_port 8554 "
         "--checkpoint_dir ../checkpoint/train_$agent_name "

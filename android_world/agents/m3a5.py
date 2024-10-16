@@ -64,14 +64,16 @@ SYSTEM_PROMPT = """You are an AI agent capable of interacting with a user interf
 
 The current UI type is: Android smartphone
 
-When referring to elements on the UI:
-- Use `<box>(x_1, y_1, x_2, y_2)</box>` to indicate a box or element on the UI.
-- Use `<point>(x, y)</point>` to indicate a specific point on the UI.
-- The origin (0, 0) is at the top-left corner of the screen. The x-axis increases to the right, and the y-axis increases downward. Both x and y are relative values ranging from 0 to 100.
+When referring to positions on the UI:
+- Use integer relative coordinates ranging from 0 to 100.
+- The origin (0, 0) is at the top-left corner of the screen. The x-axis increases to the right, and the y-axis increases downward.
+
+Here are the apps you can access directly through function calling:
+[{"app_name": "Simple Calendar Pro", "description": "A calendar app for creating, deleting, and managing events and appointments."}, {"app_name": "Settings", "description": "The Android system settings app for managing device settings such as Bluetooth, Wi-Fi, and brightness."}, {"app_name": "Markor", "description": "A note-taking app for creating, editing, deleting, and managing notes and folders."}, {"app_name": "Broccoli - Recipe App", "description": "A recipe management app for adding, deleting, and organizing recipes."}, {"app_name": "Pro Expense", "description": "An expense tracking app for adding, deleting, and managing expenses."}, {"app_name": "Simple SMS Messenger", "description": "An SMS app for sending, replying to, and resending text messages."}, {"app_name": "OpenTracks", "description": "A sport tracking app for recording and analyzing activities, durations, and distances."}, {"app_name": "Tasks", "description": "A task management app for tracking tasks, due dates, and priorities."}, {"app_name": "Clock", "description": "An app with stopwatch and timer functionality."}, {"app_name": "Joplin", "description": "A note-taking app."}, {"app_name": "Retro Music", "description": "A music player app."}, {"app_name": "Simple Gallery Pro", "description": "An app for viewing images."}, {"app_name": "Camera", "description": "An app for taking photos and videos."}, {"app_name": "Chrome", "description": "A web browser app."}, {"app_name": "Contacts", "description": "An app for managing contact information."}, {"app_name": "OsmAnd", "description": "A maps and navigation app with support for adding location markers, favorites, and saving tracks."}, {"app_name": "VLC", "description": "A media player app for playing media files."}, {"app_name": "Audio Recorder", "description": "An app for recording and saving audio clips."}, {"app_name": "Files", "description": "A file manager app for the Android filesystem, used for deleting and moving files."}, {"app_name": "Simple Draw Pro", "description": "A drawing app for creating and saving drawings."}]
 
 You are provided with function signatures within <tools> </tools> XML tags. You may call one or more functions to assist with the UI-related tasks. Don't make assumptions about what values to plug into functions.
 <tools>
-[{"type": "function", "function": {"name": "select_text", "description": "Select text on UI from specified start to end points.", "parameters": {"properties": {"start_point": {"description": "Starting point of text selection, using format: \"<point>(x, y)</point>\"", "type": "string"}, "end_point": {"description": "Ending point of text selection, using format: \"<point>(x, y)</point>\"", "type": "string"}}, "required": ["start_point", "end_point"], "type": "object"}}}, {"type": "function", "function": {"name": "enter", "description": "Press the enter key to submit forms or confirm actions.", "parameters": {"properties": {}, "type": "object"}}}, {"type": "function", "function": {"name": "input", "description": "Input the specified text into the focused field on the UI.", "parameters": {"properties": {"text": {"description": "Text to be input into the focused field", "type": "string"}}, "required": ["text"], "type": "object"}}}, {"type": "function", "function": {"name": "tap", "description": "Tap the specified point on the UI.", "parameters": {"properties": {"point": {"description": "Position of the point to tap, using format: \"<point>(x, y)</point>\"", "type": "string"}}, "required": ["point"], "type": "object"}}}, {"type": "function", "function": {"name": "home", "description": "Press home key to return to home screen.", "parameters": {"properties": {}, "type": "object"}}}, {"type": "function", "function": {"name": "back", "description": "Press back key to navigate to previous screen or state.", "parameters": {"properties": {}, "type": "object"}}}, {"type": "function", "function": {"name": "swipe", "description": "Swipe from one specified UI point to another for scrolling or gesture-based interactions.", "parameters": {"properties": {"from_point": {"description": "Starting point of the swipe, using format: \"<point>(x, y)</point>\"", "type": "string"}, "to_point": {"description": "Ending point of the swipe, using format: \"<point>(x, y)</point>\"", "type": "string"}}, "required": ["from_point", "to_point"], "type": "object"}}}, {"type": "function", "function": {"name": "set_task_status", "description": "Set the current task status as completed or impossible.", "parameters": {"properties": {"status": {"enum": ["completed", "impossible"], "type": "string"}}, "required": ["status"], "type": "object"}}}]
+[{"type": "function", "function": {"name": "tap", "description": "Tap the specified point on the UI.", "parameters": {"properties": {"point": {"description": "coordinates", "properties": {"x": {"type": "integer"}, "y": {"type": "integer"}}, "required": ["x", "y"], "type": "object"}}, "required": ["point"], "type": "object"}}}, {"type": "function", "function": {"name": "swipe", "description": "Swipe from one specified UI point to another for scrolling or gesture-based interactions.", "parameters": {"properties": {"from_point": {"description": "coordinates", "properties": {"x": {"type": "integer"}, "y": {"type": "integer"}}, "required": ["x", "y"], "type": "object"}, "to_point": {"description": "coordinates", "properties": {"x": {"type": "integer"}, "y": {"type": "integer"}}, "required": ["x", "y"], "type": "object"}}, "required": ["from_point", "to_point"], "type": "object"}}}, {"type": "function", "function": {"name": "open_app", "description": "Launch an application based on the provided app name.", "parameters": {"properties": {"app_name": {"description": "name of the application", "type": "string"}}, "required": ["app_name"], "type": "object"}}}, {"type": "function", "function": {"name": "input", "description": "Input the specified text into the focused field on the UI.", "parameters": {"properties": {"text": {"description": "text to be input", "type": "string"}}, "required": ["text"], "type": "object"}}}, {"type": "function", "function": {"name": "enter", "description": "Press the enter key to submit forms or confirm actions.", "parameters": {"properties": {}, "type": "object"}}}, {"type": "function", "function": {"name": "home", "description": "Press home key to return to home screen.", "parameters": {"properties": {}, "type": "object"}}}, {"type": "function", "function": {"name": "point_input", "description": "Focus the specified UI point and input the given text.", "parameters": {"properties": {"point": {"description": "coordinates", "properties": {"x": {"type": "integer"}, "y": {"type": "integer"}}, "required": ["x", "y"], "type": "object"}, "text": {"description": "text to be input", "type": "string"}}, "required": ["point", "text"], "type": "object"}}}, {"type": "function", "function": {"name": "set_task_status", "description": "Set the current task status as completed or impossible.", "parameters": {"properties": {"status": {"enum": ["completed", "impossible"], "type": "string"}}, "required": ["status"], "type": "object"}}}, {"type": "function", "function": {"name": "back", "description": "Press back key to navigate to previous screen or state.", "parameters": {"properties": {}, "type": "object"}}}, {"type": "function", "function": {"name": "select_text", "description": "Select text on UI from specified start to end points.", "parameters": {"properties": {"start_point": {"description": "coordinates", "properties": {"x": {"type": "integer"}, "y": {"type": "integer"}}, "required": ["x", "y"], "type": "object"}, "end_point": {"description": "coordinates", "properties": {"x": {"type": "integer"}, "y": {"type": "integer"}}, "required": ["x", "y"], "type": "object"}}, "required": ["start_point", "end_point"], "type": "object"}}}]
 </tools>
 For each function call return a json object with function name and arguments within <tool_call> </tool_call> tags with the following schema:
 <tool_call>
@@ -93,7 +95,7 @@ def build_message(role="user", text=None, image=None):
                     "image_url": {
                         "url": f"data:image/png;base64,{encode_image(image)}"
                     },
-                    # "modalities": "multi-images" if MAX_ROUND > 1 else "image"
+                    "modalities": "multi-images" if MAX_ROUND > 1 else "image"
                 },
                 {
                     "type": "text",
@@ -180,7 +182,7 @@ class M3A(base_agent.EnvironmentInteractingAgent):
 
     print(goal)
 
-    self.messages.append(build_message("user", goal, step_data['raw_screenshot']))
+    self.messages.append(build_message("user", goal, step_data['raw_screenshot'].copy()))
 
     action_output, is_safe, raw_response = self.llm.predict_custom(
         self.messages
@@ -194,7 +196,7 @@ class M3A(base_agent.EnvironmentInteractingAgent):
     step_data['action_output'] = action_output
     step_data['action_raw_response'] = raw_response
 
-    action = agent_utils.extract_json_from_action_v2(action_output)
+    action = agent_utils.extract_json_from_action_v3(action_output)
     print("action:\n", action)
 
     # If the output is not in the right format, add it to step summary which
@@ -245,7 +247,7 @@ class M3A(base_agent.EnvironmentInteractingAgent):
       )
 
     try:
-      self.env.execute_action_v3(converted_action)
+      self.env.execute_action_v4(converted_action)
     except Exception as e:  # pylint: disable=broad-exception-caught
       print('Failed to execute action.')
       print(str(e))

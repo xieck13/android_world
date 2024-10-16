@@ -44,6 +44,11 @@ def get_point_v2(data, X, Y):
     else:
       raise RuntimeError(f"failed execute_adb_action: {data}")
 
+def get_point_v3(data, X, Y):
+  x, y = int(float(data['x']) / 100. * X), int(float(data['y']) / 100. * Y)
+  return x, y
+    
+
 
 def execute_adb_action_v2(
     action,
@@ -162,13 +167,70 @@ def execute_adb_action_v3(
       adb_utils.issue_generic_request(command, env)
       
 
-    # if action["name"] == 'open_app':
-    #   app_name = action["app_name"]
-    #   if app_name:
-    #     adb_utils.launch_app(app_name, env)
-    #   else:
-    #     raise ValueError('No app name provided')
+def execute_adb_action_v4(
+    action,
+    screen_size: tuple[int, int],
+    env: android_world_controller.AndroidWorldController,
+) -> None:
+    X, Y = screen_size
+    arguments = action["arguments"]
+    if action["name"] == "tap":
+      point = arguments["point"]
+      # import pdb; pdb.set_trace()
+      x, y = get_point_v3(point, X, Y)
+      print("tap:", x, y)
+      adb_utils.tap_screen(x, y, env)
 
+    if action["name"] == "input":
+      time.sleep(1.0)
+      adb_utils.type_text(arguments["text"], env, timeout_sec=10)
+      print("input:", arguments["text"])
+      adb_utils.press_enter_button(env)
+
+    if action["name"] == "enter":
+      prin("enter")
+      adb_utils.press_enter_button(env)
+
+    if action["name"] == "home":
+      print("home")
+      adb_utils.press_home_button(env)
+
+    if action["name"] == "back":
+      print("back")
+      adb_utils.press_back_button(env)
+
+    if action["name"] == "swipe":
+      start_x, start_y = get_point_v3(arguments["from_point"], X, Y)
+      end_x, end_y = get_point_v3(arguments["to_point"], X, Y)
+      print("start_x, start_y, end_x, end_y", start_x, start_y, end_x, end_y)
+      command = adb_utils.generate_swipe_command(
+        int(start_x), int(start_y), int(end_x), int(end_y)
+      )
+      adb_utils.issue_generic_request(command, env)
+
+    if action["name"] == "select_text":
+      start_x, start_y = get_point_v3(arguments["start_point"], X, Y)
+      end_x, end_y = get_point_v3(arguments["end_point"], X, Y)
+      print("start_x, start_y, end_x, end_y", start_x, start_y, end_x, end_y)
+      command = adb_utils.generate_swipe_command(
+        int(start_x), int(start_y), int(end_x), int(end_y)
+      )
+      adb_utils.issue_generic_request(command, env)
+
+    elif action["name"] == 'open_app':
+      app_name = arguments["app_name"]
+      if app_name:
+        adb_utils.launch_app(app_name, env)
+      else:
+        raise ValueError('No app name provided')
+
+    if action["name"] == "point_input":
+      x, y = get_point_v3(arguments["point"])
+      adb_utils.tap_screen(x, y, env)
+      adb_utils.type_text(arguments["text"], env, timeout_sec=10)
+      print("input:", arguments["text"], arguments["point"])
+      adb_utils.press_enter_button(env)
+      
 
 def execute_adb_action(
     action: json_action.JSONAction,
