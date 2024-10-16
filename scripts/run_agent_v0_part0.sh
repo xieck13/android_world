@@ -65,7 +65,7 @@ easy_task_part2=SimpleSmsReply,SimpleSmsSendClipboardContent,SportsTrackerActivi
 #   --tasks 
 
 
-agent_name=m3a5_llava_ft
+agent_name=m3a6_llava_ft
 python run.py   --suite_family=android_world \
   --agent_name=$agent_name \
   --output_path ../runs/$agent_name \
