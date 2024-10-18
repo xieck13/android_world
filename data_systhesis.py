@@ -9,8 +9,10 @@ from tqdm import tqdm
 from PIL import Image
 import glob
 import json
+import android_world.env
 
-
+DATASET_HOME = "../datasets"
+IMAGE_FOLDER = "gpt4o"
 
 
 def _unzip_and_read_pickle(file_path: str):
@@ -183,19 +185,20 @@ def process_ins(ins):
         image_path = f"{time.time()}.png"
         data = {
             "goal": goal,
-            "image_path": f"gpt4o/{image_path}",
+            "image_path": f"{IMAGE_FOLDER}/{image_path}",
             "action": f"<tool_call>\n{action}\n</tool_call>",
             "reason": reason,
             "summary": summary
         }
         ins_dataset.append(data)
         
-        image = Image.fromarray(screenshot).save(f"dataset/gpt4o/{image_path}")
+        image = Image.fromarray(screenshot).save(f"{DATASET_HOME}/gpt4o/{image_path}")
 
     return ins_dataset
 
 
-path_list = glob.glob("/home/xieck13/workspace/android_workspace/runs/train_m3a_gpt4o/*/*.pkl.gz")
+path_list = glob.glob("../runs/train_m3a_gpt4o/*/*.pkl.gz")
+all_dataset = []
 
 for path in path_list:
     ins = _unzip_and_read_pickle(path)[0]
@@ -206,7 +209,7 @@ for path in path_list:
             all_dataset += ins_dataset
         except Exception as e:
             print(e)
-
-json.dump(all_dataset, open(f"dataset/gpt4o_{int(time.time())}.json", mode='w'))
+print(f"produce {len(all_dataset)} samples")
+json.dump(all_dataset, open(f"{DATASET_HOME}/{IMAGE_FOLDER}_{int(time.time())}.json", mode='w'))
 
 

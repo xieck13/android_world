@@ -58,7 +58,7 @@ from android_world.env import representation_utils
 # }
 # """
 
-MAX_ROUND = 3
+MAX_ROUND = 1
 
 SYSTEM_PROMPT = """You are an AI agent capable of interacting with a user interface through function calling. Your task is to assist users in completing UI-related tasks or answering related questions.
 
@@ -184,13 +184,16 @@ class M3A(base_agent.EnvironmentInteractingAgent):
     print(goal)
 
     if self.messages[-1]["role"] == "system":
+        # len = 1, 
         self.messages.append(build_message("user", goal, step_data['raw_screenshot'].copy()))
+        print("goal:", goal)
     elif self.messages[-1]["role"] == "assistant":
         if len(self.action_history) < 2 or self.action_history[-1] != self.action_history[-2]:
             tool_message_content = f"<tool_response>\n{{\"name\": \"ui_operation\", \"content\": {{\"status\": \"success\", \"current_ui\": \"provided image\", \"current_task\": \"{goal}\"}}}}\n</tool_response>\n"
         else:
             tool_message_content = f"<tool_response>\n{{\"name\": \"ui_operation\", \"content\": {{\"status\": \"Your action might be repetitive, please try other parameters or other actions\", \"current_ui\": \"provided image\", \"current_task\": \"{goal}\"}}}}\n</tool_response>\n"
         self.messages.append(build_message("tool", tool_message_content, step_data['raw_screenshot'].copy()))
+        print("tool_message_content:", tool_message_content)
 
     action_output, is_safe, raw_response = self.llm.predict_custom(
         self.messages
@@ -210,22 +213,22 @@ class M3A(base_agent.EnvironmentInteractingAgent):
 
     # If the output is not in the right format, add it to step summary which
     # will be passed to next step and return.
-    if not action:
-      print('Action prompt output is not in the correct format.')
-      step_data['summary'] = (
-          'Output for action selection is not in the correct format, so no'
-          ' action is performed.'
-      )
-      self.history.append(step_data)
+    # if not action:
+    #   print('Action prompt output is not in the correct format.')
+    #   step_data['summary'] = (
+    #       'Output for action selection is not in the correct format, so no'
+    #       ' action is performed.'
+    #   )
+    #   self.history.append(step_data)
 
-      # quit this round
-      self.messages.pop(1)
-      self.messages.pop(1)
+    #   # quit this round
+    #   self.messages.pop(1)
+    #   self.messages.pop(1)
 
-      return base_agent.AgentInteractionResult(
-          True,
-          step_data,
-      )
+    #   return base_agent.AgentInteractionResult(
+    #       True,
+    #       step_data,
+    #   )
 
     try:
       converted_action = action

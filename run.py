@@ -32,7 +32,7 @@ from android_world import suite_utils
 from android_world.agents import base_agent
 from android_world.agents import human_agent
 from android_world.agents import infer
-from android_world.agents import m3a, m3a2, m3a3, m3a4, m3a5
+from android_world.agents import m3a, m3a2, m3a3, m3a4, m3a5, m3a6
 from android_world.agents import random_agent
 from android_world.agents import seeact
 from android_world.agents import t3a
@@ -203,6 +203,8 @@ def _get_agent(
     agent = m3a4.M3A(env, infer.LlavaWrapper('221.12.22.187:30223'))
   elif _AGENT_NAME.value == 'm3a5_llava_ft':
     agent = m3a5.M3A(env, infer.LlavaWrapper('221.12.22.187:30223'))
+  elif _AGENT_NAME.value == 'm3a6_llava_ft':
+    agent = m3a6.M3A(env, infer.LlavaWrapper('221.12.22.187:30223'))
   elif _AGENT_NAME.value == 'm3a_qwen_72b':
     agent = m3a.M3A(env, infer.QwenWrapper('Qwen2-VL-72B-Instruct'))
   elif _AGENT_NAME.value == 'm3a4_qwen_72b':
