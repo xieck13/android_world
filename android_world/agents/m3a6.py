@@ -58,7 +58,7 @@ from android_world.env import representation_utils
 # }
 # """
 
-MAX_ROUND = 1
+MAX_ROUND = 2
 
 SYSTEM_PROMPT = """You are an AI agent capable of interacting with a user interface through function calling. Your task is to assist users in completing UI-related tasks or answering related questions.
 
@@ -84,6 +84,29 @@ For each function call return a json object with function name and arguments wit
 def encode_image(image: np.ndarray) -> str:
     return base64.b64encode(infer.array_to_jpeg_bytes(image)).decode('utf-8')
 
+def encode_image_with_resize(image: np.ndarray, resize_factor: float) -> str:
+    from PIL import Image
+    import io
+    
+    # Convert numpy array to PIL Image
+    image_pil = Image.fromarray(image)
+    
+    # Get current size
+    w, h = image_pil.size
+    
+    # Calculate new size
+    new_w, new_h = int(w * resize_factor), int(h * resize_factor)
+    
+    # Resize the image
+    image_pil_resized = image_pil.resize((new_w, new_h), Image.LANCZOS)
+    
+    # Save the resized image to a bytes buffer
+    buffer = io.BytesIO()
+    image_pil_resized.save(buffer, format="JPEG")
+    
+    # Encode the image
+    return base64.b64encode(buffer.getvalue()).decode('utf-8')
+
 
 def build_message(role="user", text=None, image=None):
     if text is not None and image is not None:
@@ -93,7 +116,7 @@ def build_message(role="user", text=None, image=None):
                 {
                     "type": "image_url",
                     "image_url": {
-                        "url": f"data:image/png;base64,{encode_image(image)}"
+                        "url": f"data:image/png;base64,{encode_image_with_resize(image, 0.5)}"
                     },
                     "modalities": "multi-images" if MAX_ROUND > 1 else "image"
                 },
@@ -182,6 +205,7 @@ class M3A(base_agent.EnvironmentInteractingAgent):
         self.messages.pop(1)
 
     print(goal)
+    # import pdb; pdb.set_trace()
 
     if self.messages[-1]["role"] == "system":
         # len = 1, 
