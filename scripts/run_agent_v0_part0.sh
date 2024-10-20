@@ -65,10 +65,20 @@ easy_task_part2=SimpleSmsReply,SimpleSmsSendClipboardContent,SportsTrackerActivi
 #   --tasks 
 
 
+agent_name=m3a4_llava_ft
+python run.py   --suite_family=android_world \
+  --agent_name=$agent_name \
+  --output_path ../runs/$agent_name \
+  --checkpoint_dir ../checkpoint/$agent_name \
+  --console_port 5554 \
+  --grpc_port 8554 \
+
+
 agent_name=m3a6_llava_ft
 python run.py   --suite_family=android_world \
   --agent_name=$agent_name \
   --output_path ../runs/$agent_name \
+  --checkpoint_dir ../checkpoint/$agent_name \
   --console_port 5554 \
   --grpc_port 8554 \
-  --tasks AudioRecorderRecordAudio,AudioRecorderRecordAudioWithFileName
+  
