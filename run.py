@@ -198,9 +198,9 @@ def _get_agent(
   elif _AGENT_NAME.value == 'm3a_llava_ft':
     agent = m3a.M3A(env, infer.LlavaWrapper('221.12.22.187:30399'))
   elif _AGENT_NAME.value == 'm3a3_llava_ft':
-    agent = m3a3.M3A(env, infer.LlavaWrapper('221.12.22.187:30399'))
+    agent = m3a3.M3A(env, infer.LlavaWrapper('221.12.22.187:30904'))
   elif _AGENT_NAME.value == 'm3a4_llava_ft':
-    agent = m3a4.M3A(env, infer.LlavaWrapper('221.12.22.187:30223'))
+    agent = m3a4.M3A(env, infer.LlavaWrapper('221.12.22.187:30904'))
   elif _AGENT_NAME.value == 'm3a5_llava_ft':
     agent = m3a5.M3A(env, infer.LlavaWrapper('221.12.22.187:30223'))
   elif _AGENT_NAME.value == 'm3a6_llava_ft':
